@@ -1,0 +1,184 @@
+import nltk
+nltk.download('punkt')
+from nltk.tokenize import word_tokenize
+
+text = "Natural Language Processing is fascinating."
+tokens = word_tokenize(text)
+print(tokens)
+
+from nltk.stem import PorterStemmer
+
+stemmer = PorterStemmer()
+words = ["running", "ran", "runs"]
+stems = [stemmer.stem(word) for word in words]
+print(stems)
+
+from nltk.stem import WordNetLemmatizer
+nltk.download('wordnet')
+
+lemmatizer = WordNetLemmatizer()
+words = ["running", "ran", "runs"]
+lemmas = [lemmatizer.lemmatize(word, pos='v') for word in words]
+print(lemmas)
+
+from nltk.corpus import stopwords
+nltk.download('stopwords')
+
+stop_words = set(stopwords.words('english'))
+filtered_text = [word for word in tokens if word.lower() not in stop_words]
+print(filtered_text)
+
+### Overview of Popular NLP Libraries
+#### NLTK (Natural Language Toolkit)
+NLTK is a powerful library for various NLP tasks, including tokenization, stemming, lemmatization, and more.
+
+#### SpaCy
+SpaCy is an open-source software library for advanced NLP tasks, known for its speed and efficiency.
+
+#### TextBlob
+TextBlob is a simple library for processing textual data, providing easy-to-use APIs for common NLP tasks.
+
+### Introduction to Chatbot Frameworks
+#### ChatterBot
+ChatterBot is a Python library that makes it easy to generate automated responses to a user's input.
+
+#### Rasa
+Rasa is an open-source framework for building conversational AI, including chatbots and voice assistants.
+
+## 2. Designing and Training a Simple Chatbot
+
+### Preprocessing Text Data
+Before training a chatbot, we need to preprocess the text data by tokenizing the text, removing stop words, and applying stemming or lemmatization.
+
+import pandas as pd
+
+# Load the dataset
+data = pd.read_csv('chatbot_dataset.csv')
+
+# Preprocess the data
+nltk.download('punkt')
+data['Question'] = data['Question'].apply(lambda x: ' '.join(nltk.word_tokenize(x.lower())))
+print(data.head())
+
+### Vectorizing Text Data
+We convert the text data into numerical values using TF-IDF (Term Frequency-Inverse Document Frequency) vectorization.
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+vectorizer = TfidfVectorizer()
+X = vectorizer.fit_transform(data['Question'])
+print(X.shape)
+
+### Training a Text Classification Model
+We use the Naive Bayes classifier to train the model on the vectorized text data.
+
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.pipeline import make_pipeline
+from sklearn.model_selection import train_test_split
+
+# Split the data into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(data['Question'], data['Answer'], test_size=0.2, random_state=42)
+
+# Create a model pipeline
+model = make_pipeline(TfidfVectorizer(), MultinomialNB())
+
+# Train the model
+model.fit(X_train, y_train)
+print("Model training complete.")
+
+### Implementing a Function to Get Chatbot Responses
+We write a function to process user input and return responses based on the trained model.
+
+# Function to get a response from the chatbot
+def get_response(question):
+    question = ' '.join(nltk.word_tokenize(question.lower()))
+    answer = model.predict([question])[0]
+    return answer
+
+# Testing the function
+print(get_response("What is NLP?"))
+
+# Basics of Dash and Plotly
+
+In this notebook, we will cover the basics of Dash and Plotly. We will explain the essential components used to create a simple web application.
+
+## Initializing the Dash App
+
+To start using Dash, you need to import the Dash module and create an instance of the Dash class. This instance will be your app.
+
+import dash
+
+# Initialize the Dash app
+app = dash.Dash(__name__)
+
+## Defining the Layout
+
+The layout of a Dash app is defined using Dash's HTML and core components. The layout describes what the app looks like.
+
+from dash import dcc, html
+
+# Define the layout
+app.layout = html.Div([
+    html.H1("My Dash App", style={'textAlign': 'center'}),
+    dcc.Input(id='input-box', type='text', value='Type something...'),
+    html.Button('Submit', id='button'),
+    html.Div(id='output-div')
+])
+
+## Callback to Update the Output
+
+Callbacks in Dash are used to update the app's layout interactively. A callback is a function that gets automatically called by Dash whenever the input components' values change.
+
+from dash.dependencies import Input, Output
+
+# Define callback to update output
+@app.callback(
+    Output('output-div', 'children'),
+    Input('button', 'n_clicks'),
+    [dash.dependencies.State('input-box', 'value')]
+)
+def update_output(n_clicks, value):
+    if n_clicks is not None:
+        return f'You have entered: {value}'
+    return ''
+
+
+## Running the App
+
+To run the app, you need to call the `run_server` method on the app instance. This will start a web server that serves the app.
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
+
+## Example: Adding a Text Area
+
+You can add a text area to your Dash app using the `dcc.Textarea` component. This component allows the user to input multiline text.
+
+app.layout = html.Div([
+    html.H1("Chatbot", style={'textAlign': 'center'}),
+    dcc.Textarea(
+        id='user-input',
+        value='Type your question here...',
+        style={'width': '100%', 'height': 100}
+    ),
+    html.Button('Submit', id='submit-button', n_clicks=0),
+    html.Div(id='chatbot-output', style={'padding': '10px'})
+])
+
+## Example: Creating a Chatbot Response
+
+We can create a simple chatbot response by defining a callback function that takes user input and generates a response.
+
+# Define callback to update chatbot response
+@app.callback(
+    Output('chatbot-output', 'children'),
+    Input('submit-button', 'n_clicks'),
+    [dash.dependencies.State('user-input', 'value')]
+)
+def update_output(n_clicks, user_input):
+    if n_clicks > 0:
+        return html.Div([
+            html.P(f"You: {user_input}", style={'margin': '10px'}),
+            html.P(f"Bot: I am training now, ask something else.", style={'margin': '10px', 'backgroundColor': '#f0f0f0', 'padding': '10px', 'borderRadius': '5px'})
+        ])
+    return "Ask me something!"
